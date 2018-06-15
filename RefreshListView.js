@@ -7,8 +7,16 @@
 //  https://github.com/huanxsd/react-native-refresh-list-view
 
 import _ from 'lodash'
-import React, {PureComponent} from 'react'
-import {View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, ViewPropTypes} from 'react-native'
+import React, { PureComponent } from 'react'
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+  ViewPropTypes
+} from 'react-native'
 
 export const RefreshState = {
   Idle: 0,
@@ -20,7 +28,9 @@ export const RefreshState = {
 }
 
 const DEBUG = false
-const log = (text: string) => {DEBUG && console.log(text)}
+const log = (text: string) => {
+  DEBUG && console.log(text)
+}
 
 type Props = {
   refreshState: number,
@@ -41,9 +51,7 @@ type Props = {
   renderItem: Function,
 }
 
-type State = {
-
-}
+type State = {}
 
 class RefreshListView extends PureComponent<Props, State> {
 
@@ -52,8 +60,6 @@ class RefreshListView extends PureComponent<Props, State> {
     footerFailureText: '点击重新加载',
     footerNoMoreDataText: '已加载全部数据',
     footerEmptyDataText: '暂时没有相关数据',
-    headerTime: 1000,
-    footerTime: 1000,
   }
 
   componentWillReceiveProps(nextProps: Props) {
@@ -73,7 +79,7 @@ class RefreshListView extends PureComponent<Props, State> {
     }
   }
 
-  onEndReached = (info: {distanceFromEnd: number}) => {
+  onEndReached = (info: { distanceFromEnd: number }) => {
     log('[RefreshListView]  onEndReached   ' + info.distanceFromEnd)
 
     if (this.shouldStartFooterRefreshing()) {
@@ -96,7 +102,7 @@ class RefreshListView extends PureComponent<Props, State> {
   shouldStartFooterRefreshing = () => {
     log('[RefreshListView]  shouldStartFooterRefreshing')
 
-    let {refreshState, data} = this.props
+    let { refreshState, data } = this.props
     if (data.length == 0) {
       return false
     }
@@ -107,22 +113,22 @@ class RefreshListView extends PureComponent<Props, State> {
   render() {
     log('[RefreshListView]  render')
 
-    let {renderItem, ...rest} = this.props
+    let { renderItem, ...rest } = this.props
 
     return (
       <FlatList
-    ref={this.props.listRef}
-    onEndReached={_.throttle(this.onEndReached, 200)}
-    onRefresh={_.throttle(this.onHeaderRefresh, 200)}
-    refreshing={this.props.refreshState == RefreshState.HeaderRefreshing}
-    ListFooterComponent={this.renderFooter}
-    onEndReachedThreshold={0.1}
+        ref={this.props.listRef}
+        onEndReached={this.props.onFooterRefresh ?_.throttle(this.onEndReached, 200): undefined}
+        onRefresh={this.props.onHeaderRefresh ? _.throttle(this.onHeaderRefresh, 200): undefined}
+        refreshing={this.props.refreshState == RefreshState.HeaderRefreshing}
+        ListFooterComponent={this.renderFooter}
+        onEndReachedThreshold={0.1}
 
-    renderItem={renderItem}
+        renderItem={renderItem}
 
-    {...rest}
-    />
-  )
+        {...rest}
+      />
+    )
   }
 
   renderFooter = () => {
@@ -130,53 +136,53 @@ class RefreshListView extends PureComponent<Props, State> {
 
     let footerContainerStyle = [styles.footerContainer, this.props.footerContainerStyle]
     let footerTextStyle = [styles.footerText, this.props.footerTextStyle]
-    let {footerRefreshingText, footerFailureText, footerNoMoreDataText, footerEmptyDataText} = this.props
+    let { footerRefreshingText, footerFailureText, footerNoMoreDataText, footerEmptyDataText } = this.props
 
     switch (this.props.refreshState) {
       case RefreshState.Idle:
-        footer = (<View style={footerContainerStyle} />)
+        footer = (<View style={footerContainerStyle}/>)
         break
       case RefreshState.Failure: {
         footer = (
           <TouchableOpacity
-        style={footerContainerStyle}
-        onPress={() => {
-          this.props.onFooterRefresh && this.props.onFooterRefresh(RefreshState.FooterRefreshing)
-        }}
-      >
-      <Text style={footerTextStyle}>{footerFailureText}</Text>
+            style={footerContainerStyle}
+            onPress={() => {
+              this.props.onFooterRefresh && this.props.onFooterRefresh(RefreshState.FooterRefreshing)
+            }}
+          >
+            <Text style={footerTextStyle}>{footerFailureText}</Text>
           </TouchableOpacity>
-      )
+        )
         break
       }
       case RefreshState.EmptyData: {
         footer = (
           <TouchableOpacity
-        style={footerContainerStyle}
-        onPress={() => {
-          this.props.onFooterRefresh && this.props.onFooterRefresh(RefreshState.FooterRefreshing)
-        }}
-      >
-      <Text style={footerTextStyle}>{footerEmptyDataText}</Text>
+            style={footerContainerStyle}
+            onPress={() => {
+              this.props.onFooterRefresh && this.props.onFooterRefresh(RefreshState.FooterRefreshing)
+            }}
+          >
+            <Text style={footerTextStyle}>{footerEmptyDataText}</Text>
           </TouchableOpacity>
-      )
+        )
         break
       }
       case RefreshState.FooterRefreshing: {
         footer = (
-          <View style={footerContainerStyle} >
-          <ActivityIndicator size="small" color="#888888" />
-          <Text style={[footerTextStyle, {marginLeft: 7}]}>{footerRefreshingText}</Text>
-        </View>
-      )
+          <View style={footerContainerStyle}>
+            <ActivityIndicator size="small" color="#888888"/>
+            <Text style={[footerTextStyle, { marginLeft: 7 }]}>{footerRefreshingText}</Text>
+          </View>
+        )
         break
       }
       case RefreshState.NoMoreData: {
         footer = (
-          <View style={footerContainerStyle} >
-          <Text style={footerTextStyle}>{footerNoMoreDataText}</Text>
+          <View style={footerContainerStyle}>
+            <Text style={footerTextStyle}>{footerNoMoreDataText}</Text>
           </View>
-      )
+        )
         break
       }
     }
